@@ -237,8 +237,7 @@ const Login = () => {
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                           onFocus={() => setFocusedField('email')}
                           onBlur={() => setFocusedField(null)}
-                          className="w-full bg-dark-700/50 border border-white/10 rounded-xl py-4 pl-16 pr-4 placeholder-gray-500 focus:outline-none focus:border-primary-500/50 transition-all"
-                          style={{ color: '#ffffff' }}
+                          className="w-full bg-slate-800 border border-slate-600 rounded-xl py-4 pl-16 pr-4 text-white placeholder-slate-500 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
                           placeholder="you@example.com"
                           required
                         />
@@ -263,8 +262,7 @@ const Login = () => {
                           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                           onFocus={() => setFocusedField('password')}
                           onBlur={() => setFocusedField(null)}
-                          className="w-full bg-dark-700/50 border border-white/10 rounded-xl py-4 pl-16 pr-14 placeholder-gray-500 focus:outline-none focus:border-primary-500/50 transition-all"
-                          style={{ color: '#ffffff' }}
+                          className="w-full bg-slate-800 border border-slate-600 rounded-xl py-4 pl-16 pr-14 text-white placeholder-slate-500 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
                           placeholder="••••••••••"
                           required
                         />
