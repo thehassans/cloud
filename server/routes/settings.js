@@ -5,25 +5,40 @@ const { query } = require('../config/database');
 // Get public settings
 router.get('/public', async (req, res) => {
   try {
-    const settings = await query(
-      'SELECT setting_key, setting_value, setting_type FROM site_settings WHERE is_public = TRUE'
-    );
+    let settingsObj = {
+      // Default settings if database not ready
+      site_name: 'Magnetic Clouds',
+      site_description: 'Premium Hosting & Domain Provider',
+      theme: 'gradient',
+      default_currency: 'USD',
+      default_language: 'en'
+    };
 
-    const settingsObj = {};
-    settings.forEach(s => {
-      let value = s.setting_value;
-      if (s.setting_type === 'boolean') {
-        value = value === 'true';
-      } else if (s.setting_type === 'number') {
-        value = parseFloat(value);
-      } else if (s.setting_type === 'json') {
-        try { value = JSON.parse(value); } catch (e) { }
+    try {
+      const settings = await query(
+        'SELECT setting_key, setting_value, setting_type FROM site_settings WHERE is_public = TRUE'
+      );
+
+      if (settings && settings.length > 0) {
+        settings.forEach(s => {
+          let value = s.setting_value;
+          if (s.setting_type === 'boolean') {
+            value = value === 'true';
+          } else if (s.setting_type === 'number') {
+            value = parseFloat(value);
+          } else if (s.setting_type === 'json') {
+            try { value = JSON.parse(value); } catch (e) { }
+          }
+          settingsObj[s.setting_key] = value;
+        });
       }
-      settingsObj[s.setting_key] = value;
-    });
+    } catch (dbErr) {
+      console.error('Database not ready, using defaults:', dbErr.message);
+    }
 
     res.json({ settings: settingsObj });
   } catch (err) {
+    console.error('Settings error:', err);
     res.status(500).json({ error: 'Failed to get settings' });
   }
 });
