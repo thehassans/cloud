@@ -1,7 +1,8 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuthStore } from '../store/useStore';
+import { useAuthStore, useSettingsStore } from '../store/useStore';
+import ThemeToggle from '../components/common/ThemeToggle';
 import {
   LayoutDashboard,
   Users,
@@ -26,6 +27,8 @@ import {
 const AdminLayout = () => {
   const location = useLocation();
   const { user, logout } = useAuthStore();
+  const { theme } = useSettingsStore();
+  const isDark = theme === 'dark';
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [searchOpen, setSearchOpen] = React.useState(false);
 
@@ -193,7 +196,11 @@ const AdminLayout = () => {
       {/* Main Content */}
       <div className="lg:ml-72 relative">
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 h-20 px-6 flex items-center justify-between bg-slate-900/80 backdrop-blur-xl border-b border-white/5">
+        <header className={`sticky top-0 z-30 h-20 px-6 flex items-center justify-between backdrop-blur-xl border-b ${
+          isDark 
+            ? 'bg-slate-900/80 border-white/5' 
+            : 'bg-white/80 border-slate-200'
+        }`}>
           {/* Left Section */}
           <div className="flex items-center gap-4">
             <button
@@ -204,7 +211,7 @@ const AdminLayout = () => {
             </button>
             
             <div className="hidden sm:block">
-              <h1 className="text-xl font-display font-bold text-white tracking-tight">
+              <h1 className={`text-xl font-display font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 {getPageTitle()}
               </h1>
               <p className="text-sm text-slate-500">
@@ -215,18 +222,29 @@ const AdminLayout = () => {
 
           {/* Right Section */}
           <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {/* Search Button */}
             <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                isDark 
+                  ? 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10' 
+                  : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+              }`}
             >
               <Search className="w-5 h-5" />
             </button>
 
             {/* Notifications */}
-            <button className="relative w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+            <button className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+              isDark 
+                ? 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10' 
+                : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+            }`}>
               <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-slate-900" />
+              <span className={`absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 ${isDark ? 'border-slate-900' : 'border-white'}`} />
             </button>
 
             {/* Divider */}

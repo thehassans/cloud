@@ -113,12 +113,13 @@ export const useCartStore = create(
 export const useSettingsStore = create(
   persist(
     (set) => ({
-      theme: 'gradient', // 'gradient' or 'solid'
+      theme: 'light', // 'light' or 'dark'
       language: 'en',
       currency: 'USD',
       siteSettings: {},
 
       setTheme: (theme) => set({ theme }),
+      toggleTheme: () => set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' })),
       setLanguage: (language) => set({ language }),
       setCurrency: (currency) => set({ currency }),
       setSiteSettings: (settings) => set({ siteSettings: settings }),

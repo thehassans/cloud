@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore, useCartStore, useUIStore, useSettingsStore } from '../../store/useStore';
+import ThemeToggle from '../common/ThemeToggle';
 import {
   Menu,
   X,
@@ -26,7 +27,8 @@ const Navbar = () => {
   const { isAuthenticated, user } = useAuthStore();
   const { getItemCount } = useCartStore();
   const { toggleCart, isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUIStore();
-  const { language, setLanguage, currency, setCurrency } = useSettingsStore();
+  const { language, setLanguage, currency, setCurrency, theme } = useSettingsStore();
+  const isDark = theme === 'dark';
   const [scrolled, setScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
 
@@ -59,7 +61,11 @@ const Navbar = () => {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled ? 'bg-slate-900/95 backdrop-blur-xl shadow-lg border-b border-white/10' : 'bg-transparent'
+      scrolled 
+        ? isDark 
+          ? 'bg-slate-900/95 backdrop-blur-xl shadow-lg border-b border-white/10' 
+          : 'bg-white/95 backdrop-blur-xl shadow-lg border-b border-slate-200'
+        : 'bg-transparent'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
@@ -69,7 +75,7 @@ const Navbar = () => {
               <span className="text-white font-bold text-lg">MC</span>
             </div>
             <div className="hidden sm:block">
-              <span className="font-display font-bold text-xl text-white">Magnetic</span>
+              <span className={`font-display font-bold text-xl ${isDark ? 'text-white' : 'text-slate-900'}`}>Magnetic</span>
               <span className="font-display font-bold text-xl gradient-text ml-1">Clouds</span>
             </div>
           </Link>
@@ -128,10 +134,15 @@ const Navbar = () => {
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {/* Language Toggle */}
             <button
               onClick={toggleLanguage}
-              className="hidden sm:flex items-center gap-1 px-3 py-2 text-gray-300 hover:text-white transition-colors"
+              className={`hidden sm:flex items-center gap-1 px-3 py-2 transition-colors ${
+                isDark ? 'text-gray-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+              }`}
             >
               <Globe className="w-4 h-4" />
               <span className="text-sm font-medium">{language.toUpperCase()}</span>

@@ -86,7 +86,7 @@ function App() {
   }, [setSiteSettings]);
 
   return (
-    <div className={theme === 'solid' ? 'theme-solid' : 'theme-gradient'}>
+    <div className={theme === 'dark' ? 'theme-dark' : 'theme-light'}>
       <Suspense fallback={<LoadingSpinner fullScreen />}>
         <Routes>
           {/* Auth Routes - No Header */}
