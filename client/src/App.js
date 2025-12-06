@@ -89,6 +89,11 @@ function App() {
     <div className={theme === 'solid' ? 'theme-solid' : 'theme-gradient'}>
       <Suspense fallback={<LoadingSpinner fullScreen />}>
         <Routes>
+          {/* Auth Routes - No Header */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+
           {/* Public Routes */}
           <Route element={<MainLayout />}>
             <Route path="/" element={<Home />} />
@@ -109,11 +114,6 @@ function App() {
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/refund" element={<RefundPolicy />} />
-
-            {/* Auth */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
 
             {/* Checkout */}
             <Route path="/cart" element={<Cart />} />

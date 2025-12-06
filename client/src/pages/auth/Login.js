@@ -1,26 +1,27 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles, Shield, Zap, Globe } from 'lucide-react';
 import { authAPI } from '../../services/api';
 import { useAuthStore } from '../../store/useStore';
 import toast from 'react-hot-toast';
 
+const features = [
+  { icon: Shield, text: '256-bit SSL Encryption' },
+  { icon: Zap, text: '99.9% Uptime Guarantee' },
+  { icon: Globe, text: 'Global Infrastructure' },
+];
+
 const Login = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [focusedField, setFocusedField] = useState(null);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    remember: false,
-  });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(false);
 
   const from = location.state?.from?.pathname || '/dashboard';
 
@@ -29,10 +30,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const { data } = await authAPI.login({
-        email: formData.email,
-        password: formData.password,
-      });
+      const { data } = await authAPI.login({ email, password });
 
       login(data.user, data.accessToken, data.refreshToken);
       toast.success('Welcome back!');
@@ -49,11 +47,7 @@ const Login = () => {
     }
   };
 
-  const features = [
-    { icon: Shield, text: '256-bit SSL Encryption' },
-    { icon: Zap, text: '99.9% Uptime Guarantee' },
-    { icon: Globe, text: 'Global Infrastructure' },
-  ];
+  const inputClass = "w-full bg-slate-800 border border-slate-600 rounded-xl py-4 pl-16 pr-4 text-white placeholder-slate-500 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all";
 
   return (
     <>
@@ -222,58 +216,44 @@ const Login = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Email Field */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Email Address
-                    </label>
-                    <div className={`relative group transition-all duration-300 ${focusedField === 'email' ? 'scale-[1.02]' : ''}`}>
-                      <div className={`absolute -inset-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl opacity-0 blur transition-opacity duration-300 ${focusedField === 'email' ? 'opacity-50' : 'group-hover:opacity-30'}`} />
-                      <div className="relative flex items-center">
-                        <div className="absolute left-4 w-10 h-10 rounded-lg bg-primary-500/10 flex items-center justify-center">
-                          <Mail className="w-5 h-5 text-primary-400" />
-                        </div>
-                        <input
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          onFocus={() => setFocusedField('email')}
-                          onBlur={() => setFocusedField(null)}
-                          className="w-full bg-slate-800 border border-slate-600 rounded-xl py-4 pl-16 pr-4 text-white placeholder-slate-500 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
-                          placeholder="you@example.com"
-                          required
-                        />
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                    <div className="relative">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg bg-primary-500/10 flex items-center justify-center">
+                        <Mail className="w-5 h-5 text-primary-400" />
                       </div>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className={inputClass}
+                        placeholder="you@example.com"
+                        required
+                      />
                     </div>
                   </div>
 
                   {/* Password Field */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Password
-                    </label>
-                    <div className={`relative group transition-all duration-300 ${focusedField === 'password' ? 'scale-[1.02]' : ''}`}>
-                      <div className={`absolute -inset-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl opacity-0 blur transition-opacity duration-300 ${focusedField === 'password' ? 'opacity-50' : 'group-hover:opacity-30'}`} />
-                      <div className="relative flex items-center">
-                        <div className="absolute left-4 w-10 h-10 rounded-lg bg-primary-500/10 flex items-center justify-center">
-                          <Lock className="w-5 h-5 text-primary-400" />
-                        </div>
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          value={formData.password}
-                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                          onFocus={() => setFocusedField('password')}
-                          onBlur={() => setFocusedField(null)}
-                          className="w-full bg-slate-800 border border-slate-600 rounded-xl py-4 pl-16 pr-14 text-white placeholder-slate-500 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
-                          placeholder="••••••••••"
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-all"
-                        >
-                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                        </button>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                    <div className="relative">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg bg-primary-500/10 flex items-center justify-center">
+                        <Lock className="w-5 h-5 text-primary-400" />
                       </div>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className={`${inputClass} pr-14`}
+                        placeholder="••••••••••"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-all"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
                     </div>
                   </div>
 
@@ -283,12 +263,12 @@ const Login = () => {
                       <div className="relative">
                         <input
                           type="checkbox"
-                          checked={formData.remember}
-                          onChange={(e) => setFormData({ ...formData, remember: e.target.checked })}
+                          checked={remember}
+                          onChange={(e) => setRemember(e.target.checked)}
                           className="sr-only"
                         />
-                        <div className={`w-5 h-5 rounded border-2 transition-all duration-200 flex items-center justify-center ${formData.remember ? 'bg-primary-500 border-primary-500' : 'border-gray-600 group-hover:border-gray-500'}`}>
-                          {formData.remember && (
+                        <div className={`w-5 h-5 rounded border-2 transition-all duration-200 flex items-center justify-center ${remember ? 'bg-primary-500 border-primary-500' : 'border-gray-600 group-hover:border-gray-500'}`}>
+                          {remember && (
                             <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
