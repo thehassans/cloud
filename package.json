@@ -1,0 +1,56 @@
+{
+  "name": "magnetic-clouds",
+  "version": "1.0.0",
+  "description": "Magnetic Clouds - Premium Hosting & Domain Provider from Bangladesh",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "nodemon server/index.js",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "install-all": "npm install && cd client && npm install",
+    "migrate": "node server/database/migrate.js",
+    "seed": "node server/database/seed.js"
+  },
+  "keywords": [
+    "hosting",
+    "domain",
+    "vps",
+    "cloud",
+    "bangladesh"
+  ],
+  "author": "Magnetic Clouds",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4",
+    "express-rate-limit": "^7.1.5",
+    "mariadb": "^3.2.3",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^16.3.1",
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.33.1",
+    "nodemailer": "^6.9.7",
+    "express-validator": "^7.0.1",
+    "uuid": "^9.0.1",
+    "slugify": "^1.6.6",
+    "sanitize-html": "^2.11.0",
+    "express-session": "^1.17.3",
+    "connect-redis": "^7.1.0",
+    "ioredis": "^5.3.2",
+    "stripe": "^14.10.0",
+    "morgan": "^1.10.0",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
