@@ -7,6 +7,38 @@ const { body, validationResult } = require('express-validator');
 const { query } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
 
+// Health check - Database connection status
+router.get('/health', async (req, res) => {
+  try {
+    const result = await query('SELECT 1 as test');
+    
+    // Check if admin user exists
+    const adminCheck = await query(
+      "SELECT id, email, role FROM users WHERE role IN ('admin', 'super_admin') LIMIT 1"
+    );
+    
+    // Count total users
+    const userCount = await query('SELECT COUNT(*) as count FROM users');
+    
+    res.json({
+      status: 'connected',
+      database: true,
+      adminExists: adminCheck.length > 0,
+      adminEmail: adminCheck.length > 0 ? adminCheck[0].email : null,
+      totalUsers: userCount[0]?.count || 0,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Health check failed:', err.message);
+    res.status(500).json({
+      status: 'error',
+      database: false,
+      error: err.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Validation rules
 const registerValidation = [
   body('email').isEmail().normalizeEmail().withMessage('Valid email required'),

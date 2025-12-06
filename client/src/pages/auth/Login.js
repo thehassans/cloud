@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles, Shield, Zap, Globe } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles, Shield, Zap, Globe, Database, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { authAPI } from '../../services/api';
 import { useAuthStore } from '../../store/useStore';
 import toast from 'react-hot-toast';
@@ -22,8 +22,34 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
+  const [dbStatus, setDbStatus] = useState({ checking: true, connected: false, adminExists: false, error: null });
 
   const from = location.state?.from?.pathname || '/dashboard';
+
+  // Check database connection on mount
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const { data } = await authAPI.health();
+        setDbStatus({
+          checking: false,
+          connected: data.database,
+          adminExists: data.adminExists,
+          adminEmail: data.adminEmail,
+          totalUsers: data.totalUsers,
+          error: null
+        });
+      } catch (err) {
+        setDbStatus({
+          checking: false,
+          connected: false,
+          adminExists: false,
+          error: err.response?.data?.error || err.message || 'Connection failed'
+        });
+      }
+    };
+    checkHealth();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -329,6 +355,48 @@ const Login = () => {
                 <div className="mt-8 flex items-center justify-center gap-2 text-xs text-gray-500">
                   <Shield className="w-4 h-4" />
                   <span>Protected by 256-bit SSL encryption</span>
+                </div>
+
+                {/* Database Status */}
+                <div className="mt-4 p-3 rounded-xl border border-white/10 bg-white/5">
+                  <div className="flex items-center gap-2 text-xs">
+                    <Database className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-400 font-medium">System Status:</span>
+                  </div>
+                  <div className="mt-2 space-y-1.5">
+                    {dbStatus.checking ? (
+                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Checking connection...</span>
+                      </div>
+                    ) : dbStatus.connected ? (
+                      <>
+                        <div className="flex items-center gap-2 text-xs text-emerald-400">
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          <span>Database Connected</span>
+                        </div>
+                        {dbStatus.adminExists ? (
+                          <div className="flex items-center gap-2 text-xs text-emerald-400">
+                            <CheckCircle className="w-3.5 h-3.5" />
+                            <span>Admin: {dbStatus.adminEmail}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-xs text-amber-400">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            <span>No admin user - run: npm run seed</span>
+                          </div>
+                        )}
+                        <div className="text-xs text-gray-500">
+                          Total users: {dbStatus.totalUsers}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-2 text-xs text-red-400">
+                        <XCircle className="w-3.5 h-3.5" />
+                        <span>Database Error: {dbStatus.error}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
