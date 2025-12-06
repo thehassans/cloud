@@ -1,15 +1,45 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs').promises;
 const { v4: uuidv4 } = require('uuid');
 const { query } = require('../config/database');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
-// Configure multer for memory storage
-const storage = multer.memoryStorage();
+// Ensure upload directories exist
+const ensureDir = async (dir) => {
+  try {
+    await fs.access(dir);
+  } catch {
+    await fs.mkdir(dir, { recursive: true });
+  }
+};
+
+// Get file extension
+const getExtension = (mimetype) => {
+  const map = {
+    'image/jpeg': '.jpg',
+    'image/png': '.png',
+    'image/gif': '.gif',
+    'image/webp': '.webp',
+    'image/svg+xml': '.svg'
+  };
+  return map[mimetype] || '.jpg';
+};
+
+// Configure multer for disk storage (no sharp needed)
+const storage = multer.diskStorage({
+  destination: async (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '../../uploads/images');
+    await ensureDir(uploadDir);
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = getExtension(file.mimetype);
+    cb(null, `${uuidv4()}${ext}`);
+  }
+});
 
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
@@ -28,15 +58,6 @@ const upload = multer({
   }
 });
 
-// Ensure upload directories exist
-const ensureDir = async (dir) => {
-  try {
-    await fs.access(dir);
-  } catch {
-    await fs.mkdir(dir, { recursive: true });
-  }
-};
-
 // Upload single image (admin only)
 router.post('/image', authenticateToken, requireAdmin, upload.single('image'), async (req, res) => {
   try {
@@ -44,41 +65,20 @@ router.post('/image', authenticateToken, requireAdmin, upload.single('image'), a
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const uploadDir = path.join(__dirname, '../../uploads/images');
-    const thumbDir = path.join(__dirname, '../../uploads/thumbnails');
-    await ensureDir(uploadDir);
-    await ensureDir(thumbDir);
-
-    const filename = uuidv4();
-    const webpFilename = `${filename}.webp`;
-    const thumbFilename = `${filename}_thumb.webp`;
-
-    // Convert to WebP (optimized)
-    await sharp(req.file.buffer)
-      .webp({ quality: 85 })
-      .toFile(path.join(uploadDir, webpFilename));
-
-    // Create thumbnail
-    await sharp(req.file.buffer)
-      .resize(300, 300, { fit: 'cover' })
-      .webp({ quality: 80 })
-      .toFile(path.join(thumbDir, thumbFilename));
-
-    // Get file info
-    const metadata = await sharp(req.file.buffer).metadata();
+    const filePath = `/uploads/images/${req.file.filename}`;
 
     // Save to database
     const result = await query(
       `INSERT INTO media (filename, original_name, mime_type, size, path, thumbnail_path, webp_path, uploaded_by)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        webpFilename,
+        req.file.filename,
         req.file.originalname,
-        'image/webp',
+        req.file.mimetype,
         req.file.size,
-        `/uploads/images/${webpFilename}`,
-        `/uploads/thumbnails/${thumbFilename}`,
-        `/uploads/images/${webpFilename}`,
+        filePath,
+        filePath, // Use same path for thumbnail (no processing)
+        filePath,
         req.user.id
       ]
     );
@@ -87,12 +87,10 @@ router.post('/image', authenticateToken, requireAdmin, upload.single('image'), a
       message: 'Image uploaded successfully',
       file: {
         id: result.insertId,
-        filename: webpFilename,
+        filename: req.file.filename,
         original_name: req.file.originalname,
-        path: `/uploads/images/${webpFilename}`,
-        thumbnail: `/uploads/thumbnails/${thumbFilename}`,
-        width: metadata.width,
-        height: metadata.height
+        path: filePath,
+        thumbnail: filePath
       }
     });
   } catch (err) {
@@ -108,48 +106,32 @@ router.post('/images', authenticateToken, requireAdmin, upload.array('images', 1
       return res.status(400).json({ error: 'No files uploaded' });
     }
 
-    const uploadDir = path.join(__dirname, '../../uploads/images');
-    const thumbDir = path.join(__dirname, '../../uploads/thumbnails');
-    await ensureDir(uploadDir);
-    await ensureDir(thumbDir);
-
     const uploadedFiles = [];
 
     for (const file of req.files) {
-      const filename = uuidv4();
-      const webpFilename = `${filename}.webp`;
-      const thumbFilename = `${filename}_thumb.webp`;
-
-      await sharp(file.buffer)
-        .webp({ quality: 85 })
-        .toFile(path.join(uploadDir, webpFilename));
-
-      await sharp(file.buffer)
-        .resize(300, 300, { fit: 'cover' })
-        .webp({ quality: 80 })
-        .toFile(path.join(thumbDir, thumbFilename));
+      const filePath = `/uploads/images/${file.filename}`;
 
       const result = await query(
         `INSERT INTO media (filename, original_name, mime_type, size, path, thumbnail_path, webp_path, uploaded_by)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          webpFilename,
+          file.filename,
           file.originalname,
-          'image/webp',
+          file.mimetype,
           file.size,
-          `/uploads/images/${webpFilename}`,
-          `/uploads/thumbnails/${thumbFilename}`,
-          `/uploads/images/${webpFilename}`,
+          filePath,
+          filePath,
+          filePath,
           req.user.id
         ]
       );
 
       uploadedFiles.push({
         id: result.insertId,
-        filename: webpFilename,
+        filename: file.filename,
         original_name: file.originalname,
-        path: `/uploads/images/${webpFilename}`,
-        thumbnail: `/uploads/thumbnails/${thumbFilename}`
+        path: filePath,
+        thumbnail: filePath
       });
     }
 
