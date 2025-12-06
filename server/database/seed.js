@@ -13,12 +13,19 @@ async function seed() {
   });
 
   try {
-    // Create admin user
-    const adminPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'Admin@123!', 12);
+    // Create admin user (delete existing and recreate to ensure password is correct)
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@magneticclouds.com';
+    const adminPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123456', 12);
+    
+    // Delete existing admin if exists to update password
+    await conn.query(`DELETE FROM users WHERE email = ?`, [adminEmail]);
+    
     await conn.query(`
-      INSERT IGNORE INTO users (uuid, email, password, first_name, last_name, role, email_verified, status)
+      INSERT INTO users (uuid, email, password, first_name, last_name, role, email_verified, status)
       VALUES (?, ?, ?, 'Super', 'Admin', 'super_admin', TRUE, 'active')
-    `, [uuidv4(), process.env.ADMIN_EMAIL || 'admin@magneticclouds.com', adminPassword]);
+    `, [uuidv4(), adminEmail, adminPassword]);
+    
+    console.log('✅ Admin user created: ' + adminEmail);
 
     // Insert Languages
     await conn.query(`
