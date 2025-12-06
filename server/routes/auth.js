@@ -17,15 +17,16 @@ router.get('/health', async (req, res) => {
       "SELECT id, email, role FROM users WHERE role IN ('admin', 'super_admin') LIMIT 1"
     );
     
-    // Count total users
+    // Count total users - convert BigInt to Number
     const userCount = await query('SELECT COUNT(*) as count FROM users');
+    const totalUsers = Number(userCount[0]?.count || 0);
     
     res.json({
       status: 'connected',
       database: true,
       adminExists: adminCheck.length > 0,
       adminEmail: adminCheck.length > 0 ? adminCheck[0].email : null,
-      totalUsers: userCount[0]?.count || 0,
+      totalUsers: totalUsers,
       timestamp: new Date().toISOString()
     });
   } catch (err) {
