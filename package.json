@@ -11,7 +11,9 @@
     "build": "cd client && npm run build",
     "install-all": "npm install && cd client && npm install",
     "migrate": "node server/database/migrate.js",
-    "seed": "node server/database/seed.js"
+    "seed": "node server/database/seed.js",
+    "postinstall": "node server/database/migrate.js || echo 'Migration skipped - configure .env first'",
+    "deploy": "git pull origin main && npm install && npm run build && npm run migrate"
   },
   "keywords": [
     "hosting",

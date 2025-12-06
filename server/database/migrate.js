@@ -599,28 +599,43 @@ CREATE TABLE IF NOT EXISTS media (
 `;
 
 async function runMigration() {
-  const conn = await mariadb.createConnection({
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT) || 3306,
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    multipleStatements: true
-  });
+  // Check if database is configured
+  if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_NAME) {
+    console.log('⚠️  Database not configured. Set DB_HOST, DB_USER, DB_PASSWORD, DB_NAME in .env file');
+    console.log('   Skipping migration...');
+    process.exit(0); // Exit gracefully, not an error
+  }
 
+  let conn;
   try {
+    conn = await mariadb.createConnection({
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT) || 3306,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD || '',
+      multipleStatements: true,
+      connectTimeout: 10000
+    });
+
     // Create database if not exists
-    await conn.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME || 'magnetic_clouds'} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
-    await conn.query(`USE ${process.env.DB_NAME || 'magnetic_clouds'}`);
+    const dbName = process.env.DB_NAME || 'magnetic_clouds';
+    await conn.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+    await conn.query(`USE \`${dbName}\``);
     
     // Run migrations
     await conn.query(migrations);
     
     console.log('✅ Database migration completed successfully!');
   } catch (err) {
+    if (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT') {
+      console.log('⚠️  Cannot connect to database. Make sure MariaDB is running.');
+      console.log('   Skipping migration...');
+      process.exit(0); // Exit gracefully for auto-deploy
+    }
     console.error('❌ Migration failed:', err.message);
     process.exit(1);
   } finally {
-    await conn.end();
+    if (conn) await conn.end();
   }
 }
 
