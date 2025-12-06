@@ -112,7 +112,9 @@ router.post('/login', loginValidation, async (req, res) => {
 
     const user = users[0];
 
-    if (user.status !== 'active') {
+    // Check account status (support both 'status' column and 'is_active' boolean)
+    const isActive = user.status === 'active' || user.is_active === 1 || user.is_active === true;
+    if (!isActive && user.status && user.status !== 'active') {
       return res.status(401).json({ error: 'Account is suspended or deleted' });
     }
 
