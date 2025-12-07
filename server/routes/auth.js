@@ -75,10 +75,12 @@ router.post('/register', registerValidation, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      console.log('Validation errors:', errors.array());
+      return res.status(400).json({ error: errors.array()[0].msg, errors: errors.array() });
     }
 
     const { email, password, first_name, last_name, phone, company } = req.body;
+    console.log('Register attempt:', { email, first_name, last_name });
 
     // Check existing user
     const existing = await query('SELECT id FROM users WHERE email = ?', [email]);
@@ -92,25 +94,31 @@ router.post('/register', registerValidation, async (req, res) => {
 
     // Create user
     await query(
-      `INSERT INTO users (uuid, email, password, first_name, last_name, phone, company, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`,
+      `INSERT INTO users (uuid, email, password, first_name, last_name, phone, company, role, status, email_verified)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'user', 'active', FALSE)`,
       [uuid, email, hashedPassword, first_name, last_name, phone || null, company || null]
     );
+    console.log('User created with uuid:', uuid);
 
     // Get created user
     const users = await query(
-      'SELECT id, uuid, email, first_name, last_name, role, preferred_language, preferred_currency FROM users WHERE uuid = ?',
+      'SELECT id, uuid, email, first_name, last_name, role FROM users WHERE uuid = ?',
       [uuid]
     );
+
+    if (!users.length) {
+      console.error('User not found after creation!');
+      return res.status(500).json({ error: 'User creation failed' });
+    }
 
     const user = users[0];
     const tokens = generateTokens(user);
 
-    // Log activity
-    await query(
+    // Log activity (non-blocking)
+    query(
       'INSERT INTO activity_logs (user_id, action, ip_address, user_agent) VALUES (?, ?, ?, ?)',
       [user.id, 'user_registered', req.ip, req.get('user-agent')]
-    );
+    ).catch(e => console.log('Activity log error:', e.message));
 
     res.status(201).json({
       message: 'Registration successful',
@@ -124,8 +132,8 @@ router.post('/register', registerValidation, async (req, res) => {
       ...tokens
     });
   } catch (err) {
-    console.error('Registration error:', err);
-    res.status(500).json({ error: 'Registration failed' });
+    console.error('Registration error:', err.message, err.code);
+    res.status(500).json({ error: 'Registration failed: ' + err.message });
   }
 });
 
