@@ -45,8 +45,14 @@ const authenticateToken = async (req, res, next) => {
 };
 
 const requireAdmin = (req, res, next) => {
-  if (!req.user || !['admin', 'super_admin'].includes(req.user.role)) {
-    return res.status(403).json({ error: 'Admin access required' });
+  console.log('requireAdmin check - user:', req.user?.email, 'role:', req.user?.role);
+  if (!req.user) {
+    console.log('requireAdmin: No user found in request');
+    return res.status(403).json({ error: 'Admin access required - not authenticated' });
+  }
+  if (!['admin', 'super_admin'].includes(req.user.role)) {
+    console.log('requireAdmin: User role not admin:', req.user.role);
+    return res.status(403).json({ error: 'Admin access required - insufficient role' });
   }
   next();
 };

@@ -40,6 +40,46 @@ router.get('/health', async (req, res) => {
   }
 });
 
+// Debug endpoint - check token validity
+router.get('/debug-token', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+      return res.json({ valid: false, error: 'No token provided' });
+    }
+    
+    if (!process.env.JWT_SECRET) {
+      return res.json({ valid: false, error: 'JWT_SECRET not configured on server' });
+    }
+    
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      
+      // Check if user exists
+      const users = await query(
+        'SELECT id, uuid, email, role, status FROM users WHERE uuid = ?',
+        [decoded.uuid]
+      );
+      
+      if (!users.length) {
+        return res.json({ valid: false, error: 'User not found in database', decoded });
+      }
+      
+      return res.json({ 
+        valid: true, 
+        user: users[0],
+        tokenPayload: decoded 
+      });
+    } catch (jwtErr) {
+      return res.json({ valid: false, error: 'Token verification failed: ' + jwtErr.message });
+    }
+  } catch (err) {
+    return res.json({ valid: false, error: err.message });
+  }
+});
+
 // Validation rules
 const registerValidation = [
   body('email').isEmail().normalizeEmail().withMessage('Valid email required'),

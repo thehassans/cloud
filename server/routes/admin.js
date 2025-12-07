@@ -112,12 +112,13 @@ router.get('/users', async (req, res) => {
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
-        total: countResult[0].total,
-        pages: Math.ceil(countResult[0].total / limit)
+        total: Number(countResult[0].total),
+        pages: Math.ceil(Number(countResult[0].total) / limit)
       }
     });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to get users' });
+    console.error('Get users error:', err);
+    res.status(500).json({ error: 'Failed to get users: ' + err.message });
   }
 });
 
