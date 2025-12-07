@@ -4,38 +4,9 @@
 
 /* Base Styles */
 @layer base {
-  /* Light Theme Variables (Default) */
   :root {
     --gradient-start: #6366f1;
     --gradient-end: #8b5cf6;
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8fafc;
-    --bg-tertiary: #f1f5f9;
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
-    --border-color: #e2e8f0;
-    --card-bg: #ffffff;
-    --card-border: #e2e8f0;
-    --input-bg: #ffffff;
-    --input-border: #cbd5e1;
-    --shadow-color: rgba(0, 0, 0, 0.1);
-  }
-
-  /* Dark Theme Variables */
-  .theme-dark {
-    --bg-primary: #0f0d1a;
-    --bg-secondary: #1e1b4b;
-    --bg-tertiary: #1e293b;
-    --text-primary: #ffffff;
-    --text-secondary: #a5b4fc;
-    --text-muted: #64748b;
-    --border-color: rgba(255, 255, 255, 0.1);
-    --card-bg: rgba(255, 255, 255, 0.05);
-    --card-border: rgba(255, 255, 255, 0.1);
-    --input-bg: rgba(255, 255, 255, 0.05);
-    --input-border: rgba(255, 255, 255, 0.1);
-    --shadow-color: rgba(0, 0, 0, 0.5);
   }
 
   * {
@@ -65,24 +36,28 @@
     scroll-behavior: smooth;
   }
 
-  /* Light Theme Body (Default) */
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  }
-
-  /* Dark Theme Body */
-  .theme-dark body {
-    @apply bg-slate-950 text-white;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   ::selection {
-    @apply bg-primary-500/30;
+    background: rgba(99, 102, 241, 0.3);
   }
+}
 
-  .theme-dark ::selection {
-    @apply text-white;
-  }
+/* Theme Wrapper Styles */
+.theme-light {
+  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 50%, #f0f9ff 100%);
+  min-height: 100vh;
+  color: #0f172a;
+}
+
+.theme-dark {
+  background: linear-gradient(135deg, #0f0d1a 0%, #1e1b4b 50%, #0f172a 100%);
+  min-height: 100vh;
+  color: #ffffff;
 }
 
 /* Component Styles */
@@ -134,17 +109,27 @@
     @apply relative z-10;
   }
 
-  /* Outline Button */
+  /* Outline Button - Light Theme */
   .btn-outline {
-    @apply px-6 py-3 font-semibold text-white rounded-xl border-2 border-primary-500/50 
-           hover:bg-primary-500/10 hover:border-primary-400 transition-all duration-300;
+    @apply px-6 py-3 font-semibold text-primary-600 rounded-xl border-2 border-primary-300 
+           hover:bg-primary-50 hover:border-primary-400 transition-all duration-300;
   }
 
-  /* Input Styles */
+  /* Outline Button - Dark Theme */
+  .theme-dark .btn-outline {
+    @apply text-white border-primary-500/50 hover:bg-primary-500/10 hover:border-primary-400;
+  }
+
+  /* Input Styles - Light Theme */
   .input-modern {
-    @apply w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white 
-           placeholder:text-gray-400 focus:outline-none focus:border-primary-500/50 
+    @apply w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 
+           placeholder:text-slate-400 focus:outline-none focus:border-primary-500 
            focus:ring-2 focus:ring-primary-500/20 transition-all duration-300;
+  }
+
+  /* Input Styles - Dark Theme */
+  .theme-dark .input-modern {
+    @apply bg-white/5 border-white/10 text-white placeholder:text-gray-400 focus:border-primary-500/50;
   }
 
   /* Card Styles */

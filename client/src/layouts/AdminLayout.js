@@ -62,12 +62,12 @@ const AdminLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className={`min-h-screen ${isDark ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950' : 'bg-gradient-to-br from-slate-100 via-white to-slate-50'}`}>
       {/* Background Pattern */}
-      <div className="fixed inset-0 opacity-30 pointer-events-none">
+      <div className={`fixed inset-0 pointer-events-none ${isDark ? 'opacity-30' : 'opacity-20'}`}>
         <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
-                           radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.1) 0%, transparent 50%)`
+          backgroundImage: `radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                           radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.15) 0%, transparent 50%)`
         }} />
       </div>
 
@@ -87,25 +87,25 @@ const AdminLayout = () => {
       {/* Sidebar */}
       <aside className={`fixed top-0 left-0 h-full w-72 z-50 transform transition-all duration-300 ease-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         {/* Sidebar Background with Glass Effect */}
-        <div className="absolute inset-0 bg-slate-900/95 backdrop-blur-xl border-r border-white/10" />
+        <div className={`absolute inset-0 backdrop-blur-xl border-r ${isDark ? 'bg-slate-900/95 border-white/10' : 'bg-white/95 border-slate-200'}`} />
         
         {/* Gradient Accent */}
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-primary-500/10 to-transparent pointer-events-none" />
         
         <div className="relative h-full flex flex-col">
           {/* Logo Section */}
-          <div className="h-20 flex items-center justify-between px-6 border-b border-white/5">
+          <div className={`h-20 flex items-center justify-between px-6 border-b ${isDark ? 'border-white/5' : 'border-slate-200'}`}>
             <Link to="/admin" className="flex items-center gap-3 group">
               <div className="relative">
                 <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary-500 via-purple-500 to-secondary-500 flex items-center justify-center shadow-lg shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow">
                   <Crown className="w-6 h-6 text-white" />
                 </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-slate-900 flex items-center justify-center">
+                <div className={`absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 flex items-center justify-center ${isDark ? 'border-slate-900' : 'border-white'}`}>
                   <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
                 </div>
               </div>
               <div className="flex flex-col">
-                <span className="font-display font-bold text-lg text-white tracking-tight">Admin Panel</span>
+                <span className={`font-display font-bold text-lg tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Admin Panel</span>
                 <span className="text-xs text-slate-500 font-medium">Magnetic Clouds</span>
               </div>
             </Link>
@@ -136,8 +136,8 @@ const AdminLayout = () => {
                     onClick={() => setSidebarOpen(false)}
                     className={`relative flex items-center gap-3.5 px-4 py-3 rounded-xl transition-all duration-200 group ${
                       active
-                        ? 'text-white'
-                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                        ? isDark ? 'text-white' : 'text-primary-700'
+                        : isDark ? 'text-slate-400 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                     }`}
                   >
                     {/* Active Background */}
@@ -205,7 +205,9 @@ const AdminLayout = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+              className={`lg:hidden w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                isDark ? 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10' : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+              }`}
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -248,7 +250,7 @@ const AdminLayout = () => {
             </button>
 
             {/* Divider */}
-            <div className="w-px h-10 bg-white/10 mx-2 hidden sm:block" />
+            <div className={`w-px h-10 mx-2 hidden sm:block ${isDark ? 'bg-white/10' : 'bg-slate-200'}`} />
 
             {/* User Profile */}
             <div className="flex items-center gap-3">
@@ -258,10 +260,10 @@ const AdminLayout = () => {
                     {user?.first_name?.charAt(0)?.toUpperCase() || 'A'}
                   </span>
                 </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full border-2 border-slate-900" />
+                <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full border-2 ${isDark ? 'border-slate-900' : 'border-white'}`} />
               </div>
               <div className="hidden md:block">
-                <p className="text-sm font-semibold text-white">
+                <p className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   {user?.first_name} {user?.last_name}
                 </p>
                 <div className="flex items-center gap-1.5">
