@@ -7,10 +7,17 @@ const authenticateToken = async (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
+      console.log('Auth: No token provided');
       return res.status(401).json({ error: 'Access token required' });
     }
 
+    if (!process.env.JWT_SECRET) {
+      console.error('Auth: JWT_SECRET not configured!');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Auth: Token decoded for uuid:', decoded.uuid);
     
     const users = await query(
       'SELECT id, uuid, email, first_name, last_name, role, status, preferred_language, preferred_currency FROM users WHERE uuid = ? AND status = ?',
@@ -18,16 +25,22 @@ const authenticateToken = async (req, res, next) => {
     );
 
     if (!users.length) {
+      console.log('Auth: User not found for uuid:', decoded.uuid);
       return res.status(401).json({ error: 'User not found or inactive' });
     }
 
+    console.log('Auth: User authenticated:', users[0].email, 'Role:', users[0].role);
     req.user = users[0];
     next();
   } catch (err) {
+    console.error('Auth error:', err.message);
     if (err.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Token expired', code: 'TOKEN_EXPIRED' });
     }
-    return res.status(403).json({ error: 'Invalid token' });
+    if (err.name === 'JsonWebTokenError') {
+      return res.status(403).json({ error: 'Invalid token: ' + err.message });
+    }
+    return res.status(403).json({ error: 'Authentication failed' });
   }
 };
 

@@ -13,45 +13,65 @@ router.use(requireAdmin);
 
 router.get('/dashboard', async (req, res) => {
   try {
-    const [
-      userCount,
-      orderCount,
-      activeServices,
-      revenue,
-      recentOrders,
-      recentTickets,
-      monthlyRevenue
-    ] = await Promise.all([
-      query('SELECT COUNT(*) as count FROM users WHERE role = ?', ['user']),
-      query('SELECT COUNT(*) as count FROM orders'),
-      query('SELECT COUNT(*) as count FROM user_services WHERE status = ?', ['active']),
-      query('SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE payment_status = ?', ['paid']),
-      query(`SELECT o.*, u.email, u.first_name, u.last_name 
+    // Get counts with error handling for each
+    let userCount = [{ count: 0 }];
+    let orderCount = [{ count: 0 }];
+    let activeServices = [{ count: 0 }];
+    let revenue = [{ total: 0 }];
+    let recentOrders = [];
+    let recentTickets = [];
+    let monthlyRevenue = [];
+
+    try {
+      userCount = await query('SELECT COUNT(*) as count FROM users WHERE role = ?', ['user']);
+    } catch (e) { console.log('userCount error:', e.message); }
+
+    try {
+      orderCount = await query('SELECT COUNT(*) as count FROM orders');
+    } catch (e) { console.log('orderCount error:', e.message); }
+
+    try {
+      activeServices = await query('SELECT COUNT(*) as count FROM services WHERE status = ?', ['active']);
+    } catch (e) { console.log('activeServices error:', e.message); }
+
+    try {
+      revenue = await query('SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE payment_status = ?', ['paid']);
+    } catch (e) { console.log('revenue error:', e.message); }
+
+    try {
+      recentOrders = await query(`SELECT o.*, u.email, u.first_name, u.last_name 
              FROM orders o JOIN users u ON o.user_id = u.id 
-             ORDER BY o.created_at DESC LIMIT 10`),
-      query(`SELECT t.*, u.email, u.first_name 
+             ORDER BY o.created_at DESC LIMIT 10`);
+    } catch (e) { console.log('recentOrders error:', e.message); }
+
+    try {
+      recentTickets = await query(`SELECT t.*, u.email, u.first_name 
              FROM support_tickets t JOIN users u ON t.user_id = u.id 
              WHERE t.status != 'closed' 
-             ORDER BY t.updated_at DESC LIMIT 10`),
-      query(`SELECT DATE_FORMAT(created_at, '%Y-%m') as month, 
+             ORDER BY t.updated_at DESC LIMIT 10`);
+    } catch (e) { console.log('recentTickets error:', e.message); }
+
+    try {
+      monthlyRevenue = await query(`SELECT DATE_FORMAT(created_at, '%Y-%m') as month, 
              SUM(total) as revenue, COUNT(*) as orders 
              FROM orders WHERE payment_status = 'paid' 
              AND created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-             GROUP BY month ORDER BY month`)
-    ]);
+             GROUP BY month ORDER BY month`);
+    } catch (e) { console.log('monthlyRevenue error:', e.message); }
 
     res.json({
       stats: {
-        total_users: userCount[0].count,
-        total_orders: orderCount[0].count,
-        active_services: activeServices[0].count,
-        total_revenue: revenue[0].total
+        total_users: userCount[0]?.count || 0,
+        total_orders: orderCount[0]?.count || 0,
+        active_services: activeServices[0]?.count || 0,
+        total_revenue: revenue[0]?.total || 0
       },
-      recent_orders: recentOrders,
-      recent_tickets: recentTickets,
-      monthly_revenue: monthlyRevenue
+      recent_orders: recentOrders || [],
+      recent_tickets: recentTickets || [],
+      monthly_revenue: monthlyRevenue || []
     });
   } catch (err) {
+    console.error('Dashboard error:', err);
     res.status(500).json({ error: 'Failed to get dashboard data' });
   }
 });
