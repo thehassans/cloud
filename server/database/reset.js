@@ -529,7 +529,69 @@ async function resetDatabase() {
       ('contact_phone', '+880 1234 567890', 'contact')
     `);
 
-    console.log('✅ Basic data inserted');
+    // Insert Service Categories
+    await conn.query(`
+      INSERT INTO service_categories (slug, name_en, name_bn, description_en, icon, sort_order, is_active) VALUES
+      ('web-hosting', 'Web Hosting', 'ওয়েব হোস্টিং', 'Fast and reliable web hosting', 'Server', 1, TRUE),
+      ('vps-servers', 'VPS Servers', 'ভিপিএস সার্ভার', 'Virtual Private Servers', 'HardDrive', 2, TRUE),
+      ('cloud-servers', 'Cloud Servers', 'ক্লাউড সার্ভার', 'Scalable cloud infrastructure', 'Cloud', 3, TRUE),
+      ('dedicated-servers', 'Dedicated Servers', 'ডেডিকেটেড সার্ভার', 'Powerful dedicated hardware', 'Server', 4, TRUE)
+    `);
+
+    // Insert Hosting Plans
+    await conn.query(`
+      INSERT INTO hosting_plans (category_id, slug, name, description, features, disk_space, bandwidth, domains, email_accounts, databases_count, ssl_included, backup_included, price_monthly, price_annual, is_popular, is_active, sort_order) VALUES
+      (1, 'starter', 'Starter', 'Perfect for personal websites', '["1 Website", "10GB SSD Storage", "Free SSL", "Daily Backups"]', '10GB', 'Unlimited', 1, 5, 2, TRUE, TRUE, 2.99, 29.99, FALSE, TRUE, 1),
+      (1, 'business', 'Business', 'Ideal for small businesses', '["5 Websites", "50GB SSD Storage", "Free SSL", "Daily Backups", "Free Domain"]', '50GB', 'Unlimited', 5, 25, 10, TRUE, TRUE, 5.99, 59.99, TRUE, TRUE, 2),
+      (1, 'professional', 'Professional', 'For high-traffic websites', '["Unlimited Websites", "100GB NVMe", "Free SSL", "Daily Backups", "Free Domain", "Priority Support"]', '100GB', 'Unlimited', -1, 100, 50, TRUE, TRUE, 9.99, 99.99, FALSE, TRUE, 3),
+      (1, 'enterprise', 'Enterprise', 'Maximum power and resources', '["Unlimited Websites", "250GB NVMe", "Free SSL", "Hourly Backups", "Free Domain", "Dedicated Support"]', '250GB', 'Unlimited', -1, -1, -1, TRUE, TRUE, 19.99, 199.99, FALSE, TRUE, 4)
+    `);
+
+    // Insert VPS Plans
+    await conn.query(`
+      INSERT INTO vps_plans (slug, name, description, cpu_cores, ram_gb, storage_gb, storage_type, bandwidth_tb, ip_addresses, os_options, features, price_monthly, price_annual, is_popular, is_active, sort_order) VALUES
+      ('vps-basic', 'VPS Basic', 'Entry-level VPS', 1, 2, 40, 'SSD', 2, 1, '["Ubuntu 22.04", "CentOS 8", "Debian 11"]', '["Full Root Access", "Free SSL", "DDoS Protection"]', 9.99, 99.99, FALSE, TRUE, 1),
+      ('vps-standard', 'VPS Standard', 'Most popular choice', 2, 4, 80, 'SSD', 4, 1, '["Ubuntu 22.04", "CentOS 8", "Debian 11"]', '["Full Root Access", "Free SSL", "DDoS Protection", "Automated Backups"]', 19.99, 199.99, TRUE, TRUE, 2),
+      ('vps-advanced', 'VPS Advanced', 'High performance', 4, 8, 160, 'NVMe', 6, 2, '["Ubuntu 22.04", "CentOS 8", "Debian 11"]', '["Full Root Access", "Free SSL", "DDoS Protection", "Daily Backups"]', 39.99, 399.99, FALSE, TRUE, 3),
+      ('vps-elite', 'VPS Elite', 'Enterprise grade', 8, 16, 320, 'NVMe', 10, 3, '["Ubuntu 22.04", "CentOS 8", "Debian 11"]', '["Full Root Access", "Free SSL", "Advanced DDoS", "Hourly Backups"]', 79.99, 799.99, FALSE, TRUE, 4)
+    `);
+
+    // Insert Cloud Plans
+    await conn.query(`
+      INSERT INTO cloud_plans (slug, name, description, cpu_cores, ram_gb, storage_gb, storage_type, bandwidth_tb, ip_addresses, auto_scaling, os_options, features, price_hourly, price_monthly, is_popular, is_active, sort_order) VALUES
+      ('cloud-starter', 'Cloud Starter', 'Entry-level cloud', 1, 1, 25, 'SSD', 1, 1, FALSE, '["Ubuntu", "CentOS", "Debian"]', '["Auto Scaling", "Load Balancing"]', 0.007, 5.00, FALSE, TRUE, 1),
+      ('cloud-standard', 'Cloud Standard', 'General purpose', 2, 4, 80, 'SSD', 4, 1, TRUE, '["Ubuntu", "CentOS", "Debian"]', '["Auto Scaling", "Load Balancing", "Snapshots"]', 0.028, 20.00, TRUE, TRUE, 2),
+      ('cloud-performance', 'Cloud Performance', 'High performance', 4, 8, 160, 'NVMe', 6, 2, TRUE, '["Ubuntu", "CentOS", "Debian"]', '["Auto Scaling", "Load Balancing", "Snapshots", "Private Network"]', 0.056, 40.00, FALSE, TRUE, 3),
+      ('cloud-enterprise', 'Cloud Enterprise', 'Enterprise grade', 8, 32, 640, 'NVMe', 10, 4, TRUE, '["Ubuntu", "CentOS", "Debian"]', '["Auto Scaling", "Load Balancing", "Snapshots", "Private Network", "Dedicated Support"]', 0.167, 120.00, FALSE, TRUE, 4)
+    `);
+
+    // Insert Dedicated Plans
+    await conn.query(`
+      INSERT INTO dedicated_plans (slug, name, description, cpu_model, cpu_cores, ram_gb, storage_config, bandwidth_tb, ip_addresses, features, price_monthly, setup_fee, is_popular, is_active, sort_order) VALUES
+      ('dedicated-e3', 'Dedicated E3', 'Intel Xeon E3', 'Intel Xeon E3-1230 v6', 4, 32, '2x 500GB SSD', 10, 5, '["Full Root Access", "IPMI Access", "DDoS Protection"]', 99.99, 49.99, FALSE, TRUE, 1),
+      ('dedicated-e5', 'Dedicated E5', 'Intel Xeon E5', 'Intel Xeon E5-2620 v4', 8, 64, '2x 1TB SSD', 20, 10, '["Full Root Access", "IPMI Access", "DDoS Protection", "Hardware RAID"]', 199.99, 0.00, TRUE, TRUE, 2),
+      ('dedicated-dual', 'Dedicated Dual', 'Dual Xeon', '2x Intel Xeon E5-2680 v4', 28, 128, '4x 1TB NVMe', 30, 16, '["Full Root Access", "IPMI Access", "Advanced DDoS", "Hardware RAID"]', 399.99, 0.00, FALSE, TRUE, 3)
+    `);
+
+    // Insert SSL Plans
+    await conn.query(`
+      INSERT INTO ssl_plans (slug, name, description, validation_type, warranty, domains_included, wildcard, features, price_annual, is_popular, is_active, sort_order) VALUES
+      ('ssl-dv', 'Domain Validation', 'Basic SSL Certificate', 'DV', 10000.00, 1, FALSE, '["256-bit Encryption", "Browser Trust", "Quick Issuance"]', 9.99, FALSE, TRUE, 1),
+      ('ssl-ov', 'Organization Validation', 'Business SSL Certificate', 'OV', 100000.00, 1, FALSE, '["256-bit Encryption", "Company Verified", "Trust Seal"]', 49.99, TRUE, TRUE, 2),
+      ('ssl-ev', 'Extended Validation', 'Green Bar SSL', 'EV', 1000000.00, 1, FALSE, '["256-bit Encryption", "Green Address Bar", "Highest Trust"]', 149.99, FALSE, TRUE, 3),
+      ('ssl-wildcard', 'Wildcard SSL', 'Unlimited Subdomains', 'DV', 50000.00, -1, TRUE, '["256-bit Encryption", "Unlimited Subdomains", "Quick Issuance"]', 79.99, FALSE, TRUE, 4)
+    `);
+
+    // Insert Datacenters
+    await conn.query(`
+      INSERT INTO datacenters (slug, name, location, country, country_code, latitude, longitude, features, is_active, sort_order) VALUES
+      ('dhaka-bd', 'Dhaka DC', 'Dhaka, Bangladesh', 'Bangladesh', 'BD', 23.8103, 90.4125, '["Tier III", "24/7 Security", "Redundant Power"]', TRUE, 1),
+      ('singapore-sg', 'Singapore DC', 'Singapore', 'Singapore', 'SG', 1.3521, 103.8198, '["Tier IV", "Low Latency Asia", "Premium Network"]', TRUE, 2),
+      ('london-uk', 'London DC', 'London, UK', 'United Kingdom', 'GB', 51.5074, -0.1278, '["Tier III+", "Europe Coverage", "GDPR Compliant"]', TRUE, 3),
+      ('new-york-us', 'New York DC', 'New York, USA', 'United States', 'US', 40.7128, -74.0060, '["Tier IV", "Americas Coverage", "Premium DDoS"]', TRUE, 4)
+    `);
+
+    console.log('✅ All data inserted');
     console.log('');
     console.log('🎉 Database reset complete!');
     console.log('');
