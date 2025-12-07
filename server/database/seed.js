@@ -23,6 +23,7 @@ async function seed() {
     } catch (e) {
       // uuid column doesn't exist, recreate the table
       console.log('🔧 Fixing users table structure...');
+      await conn.query(`SET FOREIGN_KEY_CHECKS = 0`);
       await conn.query(`DROP TABLE IF EXISTS sessions`);
       await conn.query(`DROP TABLE IF EXISTS users`);
       await conn.query(`
@@ -58,6 +59,7 @@ async function seed() {
           INDEX idx_status (status)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `);
+      await conn.query(`SET FOREIGN_KEY_CHECKS = 1`);
       console.log('✅ Users table recreated');
     }
 
