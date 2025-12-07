@@ -9,10 +9,58 @@ async function seed() {
     port: parseInt(process.env.DB_PORT) || 3306,
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'magnetic_clouds'
+    database: process.env.DB_NAME || 'magnetic_clouds',
+    multipleStatements: true
   });
 
   try {
+    // First, ensure the users table has correct structure
+    // Drop and recreate if it has wrong columns
+    console.log('🔧 Checking database structure...');
+    
+    try {
+      await conn.query(`SELECT uuid FROM users LIMIT 1`);
+    } catch (e) {
+      // uuid column doesn't exist, recreate the table
+      console.log('🔧 Fixing users table structure...');
+      await conn.query(`DROP TABLE IF EXISTS sessions`);
+      await conn.query(`DROP TABLE IF EXISTS users`);
+      await conn.query(`
+        CREATE TABLE users (
+          id INT PRIMARY KEY AUTO_INCREMENT,
+          uuid VARCHAR(36) UNIQUE NOT NULL,
+          email VARCHAR(255) UNIQUE NOT NULL,
+          password VARCHAR(255) NOT NULL,
+          first_name VARCHAR(100),
+          last_name VARCHAR(100),
+          phone VARCHAR(20),
+          company VARCHAR(255),
+          address TEXT,
+          city VARCHAR(100),
+          country VARCHAR(100),
+          postal_code VARCHAR(20),
+          avatar VARCHAR(500),
+          role ENUM('user', 'admin', 'super_admin') DEFAULT 'user',
+          email_verified BOOLEAN DEFAULT FALSE,
+          email_verification_token VARCHAR(255),
+          password_reset_token VARCHAR(255),
+          password_reset_expires DATETIME,
+          two_factor_enabled BOOLEAN DEFAULT FALSE,
+          two_factor_secret VARCHAR(255),
+          preferred_language VARCHAR(10) DEFAULT 'en',
+          preferred_currency VARCHAR(10) DEFAULT 'USD',
+          status ENUM('active', 'suspended', 'deleted') DEFAULT 'active',
+          last_login DATETIME,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          INDEX idx_email (email),
+          INDEX idx_uuid (uuid),
+          INDEX idx_status (status)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+      console.log('✅ Users table recreated');
+    }
+
     // Create admin user (delete existing and recreate to ensure password is correct)
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@magneticclouds.com';
     const adminPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123456', 12);
