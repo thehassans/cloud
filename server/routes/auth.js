@@ -46,8 +46,18 @@ router.get('/debug-token', async (req, res) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     
+    // Show JWT_SECRET status (not the actual value)
+    const jwtSecretStatus = process.env.JWT_SECRET 
+      ? `Set (${process.env.JWT_SECRET.length} chars, starts with: ${process.env.JWT_SECRET.substring(0,3)}...)` 
+      : 'NOT SET!';
+    
     if (!token) {
-      return res.json({ valid: false, error: 'No token provided' });
+      return res.json({ 
+        valid: false, 
+        error: 'No token provided',
+        jwtSecretStatus,
+        hint: 'Make sure you are logged in'
+      });
     }
     
     if (!process.env.JWT_SECRET) {
@@ -64,16 +74,29 @@ router.get('/debug-token', async (req, res) => {
       );
       
       if (!users.length) {
-        return res.json({ valid: false, error: 'User not found in database', decoded });
+        // List all users to help debug
+        const allUsers = await query('SELECT uuid, email, role FROM users LIMIT 5');
+        return res.json({ 
+          valid: false, 
+          error: 'User not found in database', 
+          tokenUuid: decoded.uuid,
+          existingUsers: allUsers 
+        });
       }
       
       return res.json({ 
         valid: true, 
         user: users[0],
-        tokenPayload: decoded 
+        tokenPayload: decoded,
+        jwtSecretStatus
       });
     } catch (jwtErr) {
-      return res.json({ valid: false, error: 'Token verification failed: ' + jwtErr.message });
+      return res.json({ 
+        valid: false, 
+        error: 'Token verification failed: ' + jwtErr.message,
+        jwtSecretStatus,
+        hint: 'JWT_SECRET may have changed. Try logging out and back in.'
+      });
     }
   } catch (err) {
     return res.json({ valid: false, error: err.message });
