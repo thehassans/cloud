@@ -2,6 +2,9 @@ require('dotenv').config({ path: require('path').join(__dirname, '../../.env') }
 const mariadb = require('mariadb');
 
 const migrations = `
+-- Disable foreign key checks during migration
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -596,6 +599,9 @@ CREATE TABLE IF NOT EXISTS media (
   FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE SET NULL,
   INDEX idx_uploaded_by (uploaded_by)
 );
+
+-- Re-enable foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;
 `;
 
 async function runMigration() {
