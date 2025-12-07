@@ -3,11 +3,17 @@ const { query } = require('../config/database');
 
 const authenticateToken = async (req, res, next) => {
   try {
-    const authHeader = req.headers['authorization'];
+    console.log('=== AUTH MIDDLEWARE ===');
+    console.log('URL:', req.originalUrl);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    
+    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+    console.log('Auth header:', authHeader ? authHeader.substring(0, 50) + '...' : 'NONE');
+    
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-      console.log('Auth: No token provided');
+      console.log('Auth: No token extracted from header');
       return res.status(401).json({ error: 'Access token required' });
     }
 
