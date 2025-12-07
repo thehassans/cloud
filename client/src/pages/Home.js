@@ -22,12 +22,14 @@ import {
   Search
 } from 'lucide-react';
 import { servicesAPI, domainsAPI } from '../services/api';
-import { useCartStore } from '../store/useStore';
+import { useCartStore, useSettingsStore } from '../store/useStore';
 import toast from 'react-hot-toast';
 
 const Home = () => {
   const { t } = useTranslation();
   const { addItem } = useCartStore();
+  const { theme } = useSettingsStore();
+  const isDark = theme === 'dark';
   const [hostingPlans, setHostingPlans] = useState([]);
   const [popularTLDs, setPopularTLDs] = useState([]);
   const [domainSearch, setDomainSearch] = useState('');
@@ -124,7 +126,7 @@ const Home = () => {
             </div>
 
             {/* Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-bold text-white mb-6 leading-tight">
+            <h1 className={`text-4xl sm:text-5xl lg:text-7xl font-display font-bold mb-6 leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
               {t('hero.title').split(' ').map((word, i) => (
                 <span key={i} className={i === 0 || i === 1 ? 'gradient-text' : ''}>
                   {word}{' '}
@@ -133,7 +135,7 @@ const Home = () => {
             </h1>
 
             {/* Subtitle */}
-            <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto mb-10">
+            <p className={`text-lg sm:text-xl max-w-3xl mx-auto mb-10 ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>
               {t('hero.subtitle')}
             </p>
 
@@ -145,7 +147,11 @@ const Home = () => {
                   value={domainSearch}
                   onChange={(e) => setDomainSearch(e.target.value)}
                   placeholder={t('domain.placeholder')}
-                  className="w-full px-6 py-5 pr-36 bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-gray-500 focus:outline-none focus:border-primary-500/50 focus:ring-2 focus:ring-primary-500/20 text-lg transition-all"
+                  className={`w-full px-6 py-5 pr-36 rounded-2xl text-lg transition-all focus:outline-none focus:border-primary-500/50 focus:ring-2 focus:ring-primary-500/20 ${
+                    isDark 
+                      ? 'bg-white/5 border border-white/10 text-white placeholder:text-gray-500' 
+                      : 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 shadow-lg'
+                  }`}
                 />
                 <button
                   type="submit"

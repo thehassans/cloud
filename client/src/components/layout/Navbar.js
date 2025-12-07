@@ -88,7 +88,9 @@ const Navbar = () => {
               onMouseEnter={() => setActiveDropdown('services')}
               onMouseLeave={() => setActiveDropdown(null)}
             >
-              <button className="flex items-center gap-1 px-4 py-2 text-gray-300 hover:text-white transition-colors">
+              <button className={`flex items-center gap-1 px-4 py-2 transition-colors ${
+                  isDark ? 'text-gray-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                }`}>
                 Services
                 <ChevronDown className={`w-4 h-4 transition-transform ${activeDropdown === 'services' ? 'rotate-180' : ''}`} />
               </button>
@@ -99,16 +101,20 @@ const Navbar = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full left-0 w-64 bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-xl overflow-hidden"
+                    className={`absolute top-full left-0 w-64 backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden ${
+                      isDark ? 'bg-slate-900/95 border border-white/10' : 'bg-white border border-slate-200'
+                    }`}
                   >
                     <div className="p-2">
                       {services.map((item) => (
                         <Link
                           key={item.path}
                           to={item.path}
-                          className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all"
+                          className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                            isDark ? 'text-gray-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                          }`}
                         >
-                          <item.icon className="w-5 h-5 text-primary-400" />
+                          <item.icon className="w-5 h-5 text-primary-500" />
                           <span>{item.label}</span>
                         </Link>
                       ))}
@@ -118,16 +124,16 @@ const Navbar = () => {
               </AnimatePresence>
             </div>
 
-            <Link to="/domains" className="px-4 py-2 text-gray-300 hover:text-white transition-colors">
+            <Link to="/domains" className={`px-4 py-2 transition-colors ${isDark ? 'text-gray-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}>
               {t('nav.domains')}
             </Link>
 
-            <Link to="/datacenters" className="px-4 py-2 text-gray-300 hover:text-white transition-colors flex items-center gap-1">
+            <Link to="/datacenters" className={`px-4 py-2 transition-colors flex items-center gap-1 ${isDark ? 'text-gray-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}>
               <MapPin className="w-4 h-4" />
               {t('nav.datacenters')}
             </Link>
 
-            <Link to="/support" className="px-4 py-2 text-gray-300 hover:text-white transition-colors">
+            <Link to="/support" className={`px-4 py-2 transition-colors ${isDark ? 'text-gray-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}>
               {t('nav.support')}
             </Link>
           </div>
@@ -151,7 +157,7 @@ const Navbar = () => {
             {/* Cart */}
             <button
               onClick={toggleCart}
-              className="relative p-2 text-gray-300 hover:text-white transition-colors"
+              className={`relative p-2 transition-colors ${isDark ? 'text-gray-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               <ShoppingCart className="w-5 h-5" />
               {getItemCount() > 0 && (
@@ -165,7 +171,7 @@ const Navbar = () => {
             {isAuthenticated ? (
               <Link
                 to={user?.role === 'user' ? '/dashboard' : '/admin'}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all"
+                className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${isDark ? 'bg-white/5 border border-white/10 text-white hover:bg-white/10' : 'bg-primary-50 border border-primary-200 text-primary-700 hover:bg-primary-100'}`}
               >
                 <User className="w-4 h-4" />
                 <span className="font-medium">{user?.first_name}</span>
@@ -174,7 +180,7 @@ const Navbar = () => {
               <div className="hidden sm:flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-gray-300 hover:text-white transition-colors font-medium"
+                  className={`px-4 py-2 transition-colors font-medium ${isDark ? 'text-gray-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
                 >
                   {t('nav.login')}
                 </Link>
@@ -190,7 +196,7 @@ const Navbar = () => {
             {/* Mobile Menu Toggle */}
             <button
               onClick={toggleMobileMenu}
-              className="lg:hidden p-2 text-gray-300 hover:text-white"
+              className={`lg:hidden p-2 ${isDark ? 'text-gray-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -205,17 +211,17 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-slate-900/95 backdrop-blur-xl border-t border-white/10"
+            className={`lg:hidden backdrop-blur-xl border-t ${isDark ? 'bg-slate-900/95 border-white/10' : 'bg-white/95 border-slate-200'}`}
           >
             <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
               {/* Services */}
               <div className="space-y-2">
-                <p className="text-gray-400 text-sm font-medium px-4">Services</p>
+                <p className={`text-sm font-medium px-4 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>Services</p>
                 {services.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all"
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isDark ? 'text-gray-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}
                   >
                     <item.icon className="w-5 h-5 text-primary-400" />
                     <span>{item.label}</span>
@@ -224,18 +230,18 @@ const Navbar = () => {
               </div>
 
               {/* Other Links */}
-              <div className="border-t border-white/10 pt-4 space-y-2">
-                <Link to="/datacenters" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5">
+              <div className={`border-t pt-4 space-y-2 ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
+                <Link to="/datacenters" className={`flex items-center gap-3 px-4 py-3 rounded-xl ${isDark ? 'text-gray-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
                   <MapPin className="w-5 h-5 text-primary-400" />
                   {t('nav.datacenters')}
                 </Link>
-                <Link to="/support" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5">
+                <Link to="/support" className={`flex items-center gap-3 px-4 py-3 rounded-xl ${isDark ? 'text-gray-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}`}>
                   {t('nav.support')}
                 </Link>
               </div>
 
               {/* Auth */}
-              <div className="border-t border-white/10 pt-4 space-y-2">
+              <div className={`border-t pt-4 space-y-2 ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
                 {isAuthenticated ? (
                   <Link
                     to="/dashboard"
@@ -248,7 +254,7 @@ const Navbar = () => {
                   <>
                     <Link
                       to="/login"
-                      className="block px-4 py-3 text-center rounded-xl text-white bg-white/5 border border-white/10"
+                      className={`block px-4 py-3 text-center rounded-xl ${isDark ? 'text-white bg-white/5 border border-white/10' : 'text-slate-700 bg-slate-100 border border-slate-200'}`}
                     >
                       {t('nav.login')}
                     </Link>
@@ -265,7 +271,7 @@ const Navbar = () => {
               {/* Language */}
               <button
                 onClick={toggleLanguage}
-                className="flex items-center gap-2 px-4 py-3 w-full text-gray-300"
+                className={`flex items-center gap-2 px-4 py-3 w-full ${isDark ? 'text-gray-300' : 'text-slate-600'}`}
               >
                 <Globe className="w-5 h-5" />
                 <span>{language === 'en' ? 'বাংলা' : 'English'}</span>
